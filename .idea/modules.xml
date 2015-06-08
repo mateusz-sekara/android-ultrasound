@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/AndroidUltrasound.iml" filepath="$PROJECT_DIR$/AndroidUltrasound.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ultrasound-android-lib/ultrasound-android-lib.iml" filepath="$PROJECT_DIR$/ultrasound-android-lib/ultrasound-android-lib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ultrasound-core/ultrasound-core.iml" filepath="$PROJECT_DIR$/ultrasound-core/ultrasound-core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ultrasound-pc-app/ultrasound-pc-app.iml" filepath="$PROJECT_DIR$/ultrasound-pc-app/ultrasound-pc-app.iml" />
+    </modules>
+  </component>
+</project>
+
