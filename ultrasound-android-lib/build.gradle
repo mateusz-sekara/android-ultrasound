@@ -19,6 +19,7 @@ android {
 }
 
 dependencies {
+    compile project(":ultrasound-core")
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:22.0.0'
 }

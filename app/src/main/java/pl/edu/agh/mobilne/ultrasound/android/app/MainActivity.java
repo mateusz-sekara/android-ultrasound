@@ -1,25 +1,42 @@
 package pl.edu.agh.mobilne.ultrasound.android.app;
 
+import android.app.Activity;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
-import android.view.Menu;
 import android.view.MenuItem;
 
+import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 
-public class MainActivity extends ActionBarActivity {
+import pl.edu.agh.mobilne.ultrasound.android.lib.ReceiverAndroid;
+import pl.edu.agh.mobilne.ultrasound.core.DataReader;
+
+
+public class MainActivity extends Activity {
+
+    private ReceiverAndroid receiver;
+
+    private DataReader dataReader;
+
+    //private SenderAndroid sender;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-    }
+        try {
+            final PipedOutputStream os = new PipedOutputStream();
+            final PipedInputStream is;
+            is = new PipedInputStream(os);
+            receiver = new ReceiverAndroid(os);
+            //sender = new SenderAndroid(new byte[] {0});
+            new Thread(receiver).start();
 
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+            dataReader = new DataReader(is);
+            new Thread(dataReader).start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -36,4 +53,10 @@ public class MainActivity extends ActionBarActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
 }
+

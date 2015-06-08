@@ -1,0 +1,122 @@
+package pl.edu.agh.mobilne.ultrasound.android.lib;
+
+import android.media.AudioFormat;
+import android.media.AudioRecord;
+import android.media.MediaRecorder;
+
+import java.io.IOException;
+import java.io.OutputStream;
+
+import pl.edu.agh.mobilne.ultrasound.android.lib.fft.FFT;
+import pl.edu.agh.mobilne.ultrasound.core.FFTConstants;
+
+import static pl.edu.agh.mobilne.ultrasound.core.Utils.computeFrequency;
+
+
+public class ReceiverAndroid implements Runnable {
+
+    private static final int bufferSize = FFTConstants.recordSampleRate;
+    private static final short mainBuffer[] = new short[bufferSize];
+    private static final short syncBuffer[] = new short[bufferSize];
+
+    private OutputStream os;
+
+    AudioRecord audioRecord;
+
+    private FFT mainFFT;
+
+    private FFT syncFFT;
+
+    public ReceiverAndroid(OutputStream os) {
+        this.os = os;
+        try {
+            mainFFT = new FFT(FFTConstants.fftSampleRate, FFTConstants.sampleRate);
+            syncFFT = new FFT(FFTConstants.smallFftSampleRate, FFTConstants.sampleRate);
+            audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, FFTConstants.sampleRate,
+                    AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, FFTConstants.recordSampleRate * 2);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void run() {
+        audioRecord.startRecording();
+
+        int syncFoundPosition = syncAndReturnBufferPosition();
+        if (syncFoundPosition < 0) {
+            return;
+        }
+
+        int count = readFirstLineAfterSync(syncFoundPosition);
+        while (true) {
+            if (count == bufferSize) {
+                processData();
+            } else {
+                System.err.println("Wrong buffer size");
+                return;
+            }
+            count = audioRecord.read(mainBuffer, 0, bufferSize);
+        }
+    }
+
+    private int syncAndReturnBufferPosition() {
+        int found;
+        outer:
+        while (true) {
+            int count = audioRecord.read(syncBuffer, 0, bufferSize);
+            if (count == bufferSize) {
+                for (int k = 0; k < FFTConstants.smallFftToRecordMultiplier; k++) {
+                    syncFFT.forward(syncBuffer, FFTConstants.smallFftSampleRate * k, FFTConstants.smallFftSampleRate);
+                    final boolean has19k = syncFFT.hasFrequency(Math.round(FFTConstants.frequencyOn / FFTConstants.smallFftFreqIndexRange) * FFTConstants.smallFftFreqIndexRange);
+                    if (has19k) {
+                        found = FFTConstants.smallFftSampleRate * k;
+                        System.out.println("Found on position: " + found);
+                        break outer;
+                    }
+                }
+            } else {
+                System.err.println("Wrong buffer size");
+                return -1;
+            }
+        }
+        return found;
+    }
+
+    private int readFirstLineAfterSync(int syncFoundPosition) {
+        try {
+            System.arraycopy(syncBuffer, syncFoundPosition, mainBuffer, 0, bufferSize - syncFoundPosition);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.err.println("found: " + syncFoundPosition);
+            return -1;
+        }
+        if (syncFoundPosition > 0) {
+            return bufferSize - syncFoundPosition + audioRecord.read(mainBuffer, bufferSize - syncFoundPosition, syncFoundPosition);
+        } else {
+            return bufferSize;
+        }
+    }
+
+    private void processData() {
+        for (int k = 0; k < FFTConstants.fftToRecordMultiplier; k++) {
+            mainFFT.forward(mainBuffer, FFTConstants.fftSampleRate * k, FFTConstants.fftSampleRate);
+            int output = 0;
+            if (!mainFFT.hasFrequency(computeFrequency(FFTConstants.frequencyOn))) { // is not 0
+                for (int i = 3; i >= 0; i--) {
+                    output = output << 1;
+                    if (mainFFT.hasFrequency(computeFrequency(FFTConstants.baseFrequency + FFTConstants.stepFrequency * i))) {
+                        output += 1;
+                    }
+                }
+                if (output == 0) {
+                    output = -1; // silence
+                }
+            }
+            try {
+                os.write(output);
+            } catch (IOException e) {
+                //do nothing
+            }
+        }
+    }
+}

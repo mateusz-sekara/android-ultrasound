@@ -1,5 +1,6 @@
 apply plugin: 'java'
 
 dependencies {
+    compile project(":ultrasound-core")
     compile fileTree(dir: 'libs', include: ['*.jar'])
 }
