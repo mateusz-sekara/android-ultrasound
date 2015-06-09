@@ -9,8 +9,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import pl.edu.agh.mobilne.ultrasound.android.lib.Constants;
-import pl.edu.agh.mobilne.ultrasound.android.lib.fft.FFT;
 import pl.edu.agh.mobilne.ultrasound.core.FFTConstants;
+import pl.edu.agh.mobilne.ultrasound.core.fft.FFT;
 
 import static pl.edu.agh.mobilne.ultrasound.core.Utils.computeFrequency;
 

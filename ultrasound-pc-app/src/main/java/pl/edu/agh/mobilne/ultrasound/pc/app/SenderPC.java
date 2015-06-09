@@ -1,42 +1,38 @@
 package pl.edu.agh.mobilne.ultrasound.pc.app;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.CRC32;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.SourceDataLine;
 
+import pl.edu.agh.mobilne.ultrasound.core.AbstractSender;
 import pl.edu.agh.mobilne.ultrasound.core.FFTConstants;
 
 import static pl.edu.agh.mobilne.ultrasound.core.Utils.computeFrequency;
 
-public class SenderPC implements Runnable {
+public class SenderPC extends AbstractSender {
 
     private SourceDataLine line;
 
-    private CRC32 crc32Comp = new CRC32();
-
-    private byte[] data;
-    private long crc32;
-    private boolean sent = true;
-
-    private Map<Integer, byte[]> samples = new HashMap<Integer, byte[]>();
-    private byte silence[];
+    private Map<Integer, byte[]> samples;
 
     public SenderPC(byte[] initData) {
-        prepare();
-        prepareTones();
-        setData(initData);
+        super(initData);
     }
 
-    private void prepare() {
+    @Override
+    protected void send4Bits(int data) {
+        line.write(samples.get(data), 0, FFTConstants.fftSampleRate);
+    }
+
+    protected void prepare() {
         try {
+            samples = new HashMap<Integer, byte[]>();
             final AudioFormat format = new AudioFormat(FFTConstants.sampleRate, 8, 1, true, true);
             DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
             line = (SourceDataLine) AudioSystem.getLine(info);
@@ -46,62 +42,9 @@ public class SenderPC implements Runnable {
         }
     }
 
-    public synchronized boolean setData(byte[] data) {
-        if (!sent) {
-            return false;
-        }
-        sent = false;
-        this.data = Arrays.copyOf(data, data.length);
-        crc32Comp.update(this.data);
-        crc32 = crc32Comp.getValue();
-        crc32Comp.reset();
-        return true;
-    }
-
-    @Override
-    public void run() {
-        line.start();
-        while (true) {
-            sendSyncData();
-            sendData();
-        }
-    }
-
-    private void sendSyncData() {
-        for (int i = 0; i < 5; i++) {
-            line.write(silence, 0, FFTConstants.fftSampleRate);
-        }
-        for (int i = 0; i < 5; i++) {
-            line.write(samples.get(0), 0, FFTConstants.fftSampleRate);
-        }
-        for (int i = 0; i < 5; i++) {
-            line.write(silence, 0, FFTConstants.fftSampleRate);
-        }
-    }
-
-    private synchronized void sendData() {
-        for (byte singleByte : data) {
-            // send low order bytes
-            for (int i = 0; i < 5; i++) {
-                line.write(samples.get(((singleByte >> 4) & 0x0F)), 0, FFTConstants.fftSampleRate);
-            }
-            // send high order bytes
-            for (int i = 0; i < 5; i++) {
-                line.write(samples.get((singleByte & 0x0F)), 0, FFTConstants.fftSampleRate);
-            }
-        }
-        // send last 2 bytes of crc from highest to lowest
-        for (int j = 3; j >= 0; j--) {
-            for (int i = 0; i < 5; i++) {
-                line.write(samples.get((int) ((crc32 >> (4 * j)) & 0x0F)), 0, FFTConstants.fftSampleRate);
-            }
-        }
-        sent = true;
-    }
-
-    private void prepareTones() {
+    protected void prepareTones() {
         samples.put(0, genTone(computeFrequency(FFTConstants.frequencyOn)));
-        silence = new byte[FFTConstants.fftSampleRate];
+        samples.put(FFTConstants.SILENCE, new byte[FFTConstants.fftSampleRate]);
         for (int i = 0; i < 4; i++) {
             samples.put((1 << i), genTone(computeFrequency(FFTConstants.baseFrequency + FFTConstants.stepFrequency * i)));
         }

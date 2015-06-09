@@ -1,4 +1,4 @@
-package pl.edu.agh.mobilne.ultrasound.pc.app.fft;
+package pl.edu.agh.mobilne.ultrasound.core.fft;
 
 //TODO create common version and move to core module
 public abstract class FourierTransform {
@@ -9,7 +9,7 @@ public abstract class FourierTransform {
     protected float[] imag;
     protected float[] spectrum;
 
-    FourierTransform(int timeSize, float sampleRate) {
+    public FourierTransform(int timeSize, float sampleRate) {
         this.timeSize = timeSize;
         this.sampleRate = (int) sampleRate;
         bandWidth = (2f / timeSize) * ((float) sampleRate / 2f);

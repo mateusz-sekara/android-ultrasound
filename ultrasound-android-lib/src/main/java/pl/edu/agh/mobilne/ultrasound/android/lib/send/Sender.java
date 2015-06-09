@@ -6,39 +6,34 @@ import android.media.AudioTrack;
 import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.CRC32;
 
 import pl.edu.agh.mobilne.ultrasound.android.lib.Constants;
+import pl.edu.agh.mobilne.ultrasound.core.AbstractSender;
 import pl.edu.agh.mobilne.ultrasound.core.FFTConstants;
 
 import static pl.edu.agh.mobilne.ultrasound.core.Utils.computeFrequency;
 
-class Sender implements Runnable {
+class Sender extends AbstractSender {
 
     private AudioTrack audioTrack;
 
-    private CRC32 crc32Comp = new CRC32();
+    private Map<Integer, short[]> samples;
 
-    private byte[] data;
-    private long crc32;
-    private boolean sent = true;
-
-    private Map<Integer, short[]> samples = new HashMap<Integer, short[]>();
-    private short silence[];
-
-    private volatile boolean stopFlag = false;
-
-    Sender(byte[] initData) {
-        prepare();
-        prepareTones();
-        setData(initData);
+    public Sender(byte[] initData) {
+        super(initData);
     }
 
-    private void prepare() {
+    @Override
+    protected void send4Bits(int data) {
+        audioTrack.write(samples.get(data), 0, FFTConstants.fftSampleRate);
+        audioTrack.play();
+    }
+
+    protected void prepare() {
+        samples = new HashMap<Integer, short[]>();
         try {
             audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,
                     FFTConstants.sampleRate, AudioFormat.CHANNEL_OUT_MONO,
@@ -49,73 +44,9 @@ class Sender implements Runnable {
         }
     }
 
-    public synchronized boolean setData(byte[] data) {
-        if (!sent) {
-            return false;
-        }
-        sent = false;
-        this.data = Arrays.copyOf(data, data.length);
-        crc32Comp.update(this.data);
-        crc32 = crc32Comp.getValue();
-        crc32Comp.reset();
-        return true;
-    }
-
-    @Override
-    public void run() {
-        Log.d(Constants.LOG, "Starting sender thread");
-
-        while (!stopFlag) {
-            sendSyncData();
-            sendData();
-        }
-    }
-
-    public void stop() {
-        Log.d(Constants.LOG, "Destroying sender thread");
-        stopFlag = true;
-    }
-
-    private void sendSyncData() {
-        for (int i = 0; i < 5; i++) {
-            audioTrack.write(silence, 0, FFTConstants.fftSampleRate);
-            audioTrack.play();
-        }
-        for (int i = 0; i < 5; i++) {
-            audioTrack.write(samples.get(0), 0, FFTConstants.fftSampleRate);
-            audioTrack.play();
-        }
-        for (int i = 0; i < 5; i++) {
-            audioTrack.write(silence, 0, FFTConstants.fftSampleRate);
-            audioTrack.play();
-        }
-    }
-
-    private synchronized void sendData() {
-        for (byte singleByte : data) {
-            // send low order bytes
-            for (int i = 0; i < 5; i++) {
-                audioTrack.write(samples.get(((singleByte >> 4) & 0x0F)), 0, FFTConstants.fftSampleRate);
-                audioTrack.play();
-            }
-            // send high order bytes
-            for (int i = 0; i < 5; i++) {
-                audioTrack.write(samples.get((singleByte & 0x0F)), 0, FFTConstants.fftSampleRate);
-                audioTrack.play();
-            }
-        }
-        // send last 2 bytes of crc from highest to lowest
-        for (int j = 4; j > 0; j--) {
-            for (int i = 0; i < 5; i++) {
-                audioTrack.write(samples.get((int) ((crc32 >> (4 * j)) & 0x0F)), 0, FFTConstants.fftSampleRate);
-                audioTrack.play();
-            }
-        }
-    }
-
-    private void prepareTones() {
+    protected void prepareTones() {
         samples.put(0, genTone(computeFrequency(FFTConstants.frequencyOn)));
-        silence = new short[FFTConstants.fftSampleRate];
+        samples.put(FFTConstants.SILENCE, new short[FFTConstants.fftSampleRate]);
         for (int i = 0; i < 4; i++) {
             samples.put((1 << i), genTone(computeFrequency(FFTConstants.baseFrequency + FFTConstants.stepFrequency * i)));
         }

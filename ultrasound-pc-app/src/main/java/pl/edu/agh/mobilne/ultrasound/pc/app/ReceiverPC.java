@@ -8,7 +8,7 @@ import javax.sound.sampled.DataLine;
 import javax.sound.sampled.TargetDataLine;
 
 import pl.edu.agh.mobilne.ultrasound.core.FFTConstants;
-import pl.edu.agh.mobilne.ultrasound.pc.app.fft.FFT;
+import pl.edu.agh.mobilne.ultrasound.core.fft.FFT;
 
 import static pl.edu.agh.mobilne.ultrasound.core.Utils.computeFrequency;
 

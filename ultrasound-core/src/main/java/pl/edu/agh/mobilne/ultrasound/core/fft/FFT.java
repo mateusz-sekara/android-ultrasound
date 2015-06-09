@@ -1,4 +1,4 @@
-package pl.edu.agh.mobilne.ultrasound.pc.app.fft;
+package pl.edu.agh.mobilne.ultrasound.core.fft;
 
 
 //TODO create common version and move to core module
@@ -43,18 +43,26 @@ public class FFT extends FourierTransform {
     }
 
     public void forward(byte[] buffer) {
-        if (buffer.length != timeSize) {
+        forward(buffer, 0, buffer.length);
+    }
+
+    public void forward(short[] buffer) {
+        forward(buffer, 0, buffer.length);
+    }
+
+    public void forward(byte[] buffer, int bufferOffset, int length) {
+        if (buffer.length < bufferOffset + length && length != timeSize) {
             throw new IllegalArgumentException("FFT.forward: The length of the passed sample buffer must be equal to timeSize().");
         }
         // copy samples to real/imag in bit-reversed order
-        bitReverseSamples(buffer, 0, buffer.length);
+        bitReverseSamples(buffer, bufferOffset, length);
         // perform the fft
         fft();
         // fill the spectrum buffer with amplitudes
         fillSpectrum();
     }
 
-    public void forward(byte[] buffer, int bufferOffset, int length) {
+    public void forward(short[] buffer, int bufferOffset, int length) {
         if (buffer.length < bufferOffset + length && length != timeSize) {
             throw new IllegalArgumentException("FFT.forward: The length of the passed sample buffer must be equal to timeSize().");
         }
@@ -82,6 +90,13 @@ public class FFT extends FourierTransform {
     // copies the values in the samples array into the real array
     // in bit reversed order. the imag array is filled with zeros.
     private void bitReverseSamples(byte[] samples, int bufferOffset, int length) {
+        for (int i = 0; i < length; i++) {
+            real[i] = (float) samples[bufferOffset + reverse[i]];
+            imag[i] = 0.0f;
+        }
+    }
+
+    private void bitReverseSamples(short[] samples, int bufferOffset, int length) {
         for (int i = 0; i < length; i++) {
             real[i] = (float) samples[bufferOffset + reverse[i]];
             imag[i] = 0.0f;
@@ -124,18 +139,7 @@ public class FFT extends FourierTransform {
             }
         }
         avg /= indexMax - indexMin - (indexFreqMax - indexFreqMin);
-        /*float freqAvg = 0;
-        for(int i = indexFreqMin; i <= indexFreqMax; i++) {
-            freqAvg += spectrum[i];
-        }
-        freqAvg /= indexFreqMax - indexFreqMin + 1;*/
-        if (spectrum[index] > avg * 5) {
-            //for(int i = indexMin; i <= indexMax; i++) {
-            System.out.print(frequency + "Hz: " + spectrum[index] + ";    ");
-            //}
-            //System.out.println();
-        }
 
-        return spectrum[index] > avg * 5; // TODO: check multiplier
+        return spectrum[index] > avg * 3.5;
     }
 }
