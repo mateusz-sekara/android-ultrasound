@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
@@ -56,18 +55,13 @@ public class ReceiverService extends Service {
         dataReader.stop();
         receiver.stop();
 
+        //fixme might cause errors, streams should be closed somewhere else
+        /*
         closeQuietly(outputStream);
         closeQuietly(inputStream);
+        */
     }
 
-    private void closeQuietly(Closeable closeable) {
-        if (closeable != null) {
-            try {
-                closeable.close();
-            } catch (IOException e) {
-            }
-        }
-    }
 
     private void publishResult(byte[] byteBuffer) {
         Intent intent = new Intent(NOTIFICATION_ID);

@@ -8,7 +8,6 @@ import java.util.zip.CRC32;
 
 public abstract class AbstractDataReader implements Runnable {
 
-
     private volatile boolean stopFlag = false;
 
     private CRC32 crcCalc = new CRC32();
@@ -41,6 +40,8 @@ public abstract class AbstractDataReader implements Runnable {
         } catch (IOException e) {
             //fixme logger
             e.printStackTrace();
+        } finally {
+            Utils.closeQuietly(baos);
         }
     }
 

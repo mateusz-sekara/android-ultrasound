@@ -37,7 +37,6 @@ public class SenderPC implements Runnable {
 
     private void prepare() {
         try {
-
             final AudioFormat format = new AudioFormat(FFTConstants.sampleRate, 8, 1, true, true);
             DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
             line = (SourceDataLine) AudioSystem.getLine(info);

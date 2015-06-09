@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import pl.edu.agh.mobilne.ultrasound.android.app.model.Token;
 import pl.edu.agh.mobilne.ultrasound.android.lib.receive.ReceiverService;
 
 

@@ -4,20 +4,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+//fixme replace sysouts with logger which will be available on both android and pc version
 public class DataProcessor {
 
     private static final int FAULT_TOLERANCE = 3;
 
     private State state = State.NOT_INITIALIZED;
-
     private InputStream is;
-
     private OutputStream os;
 
     private byte[] data = new byte[1024];
 
     private int pos;
-
     private int count;
 
     public DataProcessor(InputStream is, OutputStream os) {
