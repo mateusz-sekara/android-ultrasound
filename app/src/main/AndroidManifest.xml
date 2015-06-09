@@ -10,16 +10,27 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name">
-        <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
+            <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".TokenSenderActivity"
-            android:label="@string/title_activity_token_sender"></activity>
-
+            android:label="@string/title_activity_token_sender"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="pl.edu.agh.mobilne.ultrasound.android.app.MainActivity" />
+        </activity>
+        <activity
+            android:name=".TokenReceiverActivity"
+            android:label="@string/title_activity_token_receiver"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="pl.edu.agh.mobilne.ultrasound.android.app.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

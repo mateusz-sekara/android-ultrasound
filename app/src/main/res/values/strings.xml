@@ -1,15 +1,19 @@
 <resources>
     <string name="app_name">AndroidUltrasound</string>
 
-    <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-    <string name="title_activity_token_sender">token_sender</string>
+    <string name="title_activity_token_sender">Token Sender</string>
     <string name="tokenReceiverActivityButtonText">Token Receiver</string>
     <string name="tokenSenderActivityButtonText">Token Sender</string>
-    <string name="mainActivityTitle">UltraSound Test</string>
+    <string name="mainActivityTitle">Ultrasound Test</string>
     <string name="tokenSenderActivityTitleText">Token Sender</string>
     <string name="stopSendButtonText">Stop</string>
     <string name="startSendButtonText">Start</string>
     <string name="tokenEditTextHint">Insert token</string>
     <string name="generateTokenButtonText">Generate</string>
+    <string name="title_activity_token_receiver">Token Receiver</string>
+    <string name="tokenValueTextViewText">Token value</string>
+    <string name="stopReceiveButtonText">Stop</string>
+    <string name="startReceiveButtonText">Start</string>
+    <string name="tokenReceiverActivityTitleText">Token Receiver</string>
 </resources>

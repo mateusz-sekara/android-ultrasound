@@ -19,20 +19,21 @@
         android:layout_alignParentStart="true" />
 
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/stopSendButtonText"
         android:id="@+id/stopSendButton"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:onClick="stopSendingToken" />
 
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/startSendButtonText"
         android:id="@+id/startSendButton"
         android:layout_above="@+id/stopSendButton"
-        android:layout_centerHorizontal="true" />
+        android:onClick="startSendingToken" />
 
     <EditText
         android:layout_width="wrap_content"
@@ -42,8 +43,8 @@
         android:layout_centerVertical="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_alignRight="@+id/startSendButton"
-        android:layout_alignEnd="@+id/startSendButton" />
+        android:layout_toLeftOf="@+id/generateTokenButton"
+        android:layout_toStartOf="@+id/generateTokenButton" />
 
     <Button
         android:layout_width="wrap_content"
@@ -51,7 +52,7 @@
         android:text="@string/generateTokenButtonText"
         android:id="@+id/generateTokenButton"
         android:layout_alignBottom="@+id/tokenEditText"
-        android:layout_toRightOf="@+id/tokenEditText"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:onClick="generateToken" />
 </RelativeLayout>

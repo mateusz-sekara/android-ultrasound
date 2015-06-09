@@ -1,8 +1,10 @@
 package pl.edu.agh.mobilne.ultrasound.android.app;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
 
 
 public class MainActivity extends Activity {
@@ -31,6 +33,16 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+    }
+
+    public void startSenderActivity(View view) {
+        Intent intent = new Intent(this, TokenSenderActivity.class);
+        startActivity(intent);
+    }
+
+    public void startReceiverActivity(View view) {
+        Intent intent = new Intent(this, TokenReceiverActivity.class);
+        startActivity(intent);
     }
 }
 

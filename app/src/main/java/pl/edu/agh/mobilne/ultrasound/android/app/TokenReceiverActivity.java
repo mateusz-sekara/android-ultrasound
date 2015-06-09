@@ -5,24 +5,25 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 
-public class TokenSenderActivity extends ActionBarActivity {
+public class TokenReceiverActivity extends ActionBarActivity {
 
     private boolean isStarted = false;
 
-    private Button startSendingButton;
-    private Button stopSendingButton;
-    private Button generateTokenButton;
+    private Button startReceivingButton;
+    private Button stopReceivingButton;
+    private TextView tokenValueTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_token_sender);
+        setContentView(R.layout.activity_token_receiver);
 
-        startSendingButton = (Button) findViewById(R.id.startSendButton);
-        stopSendingButton = (Button) findViewById(R.id.stopSendButton);
-        generateTokenButton = (Button) findViewById(R.id.generateTokenButton);
+        startReceivingButton = (Button) findViewById(R.id.startReceiveButton);
+        stopReceivingButton = (Button) findViewById(R.id.stopReceiveButton);
+        tokenValueTextView = (TextView) findViewById(R.id.tokenValueTextView);
 
         updateButtons();
     }
@@ -42,24 +43,20 @@ public class TokenSenderActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void startSendingToken(View view) {
+    public void startReceivingToken(View view) {
         isStarted = true;
 
         updateButtons();
     }
 
-    public void stopSendingToken(View view) {
+    public void stopReceivingToken(View view) {
         isStarted = false;
 
         updateButtons();
     }
 
-    public void generateToken(View view) {
-    }
-
     private void updateButtons() {
-        startSendingButton.setEnabled(!isStarted);
-        stopSendingButton.setEnabled(isStarted);
-        generateTokenButton.setEnabled(!isStarted);
+        startReceivingButton.setEnabled(!isStarted);
+        stopReceivingButton.setEnabled(isStarted);
     }
 }
