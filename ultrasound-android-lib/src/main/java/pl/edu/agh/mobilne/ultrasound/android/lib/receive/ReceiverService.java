@@ -18,7 +18,6 @@ public class ReceiverService extends Service {
             = "pl.edu.agh.mobilne.ultrasound.android.lib.receive.ReceiverService";
 
     public static final String BYTE_BUFFER_KEY = "bytebuffer";
-    public static final String STATUS_KEY = "status";
 
     private AndroidDataReader dataReader;
     private Receiver receiver;
@@ -66,7 +65,6 @@ public class ReceiverService extends Service {
     private void publishResult(byte[] byteBuffer) {
         Intent intent = new Intent(NOTIFICATION_ID);
         intent.putExtra(BYTE_BUFFER_KEY, byteBuffer);
-        intent.putExtra(STATUS_KEY, 0 /*fixme*/);
         sendBroadcast(intent);
     }
 

@@ -3,6 +3,7 @@ package pl.edu.agh.mobilne.ultrasound.android.lib.send;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,11 +12,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.CRC32;
 
+import pl.edu.agh.mobilne.ultrasound.android.lib.Constants;
 import pl.edu.agh.mobilne.ultrasound.core.FFTConstants;
 
 import static pl.edu.agh.mobilne.ultrasound.core.Utils.computeFrequency;
 
-class SenderAndroid implements Runnable {
+class Sender implements Runnable {
 
     private AudioTrack audioTrack;
 
@@ -28,7 +30,9 @@ class SenderAndroid implements Runnable {
     private Map<Integer, short[]> samples = new HashMap<Integer, short[]>();
     private short silence[];
 
-    SenderAndroid(byte[] initData) {
+    private volatile boolean stopFlag = false;
+
+    Sender(byte[] initData) {
         prepare();
         prepareTones();
         setData(initData);
@@ -36,13 +40,12 @@ class SenderAndroid implements Runnable {
 
     private void prepare() {
         try {
-
             audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,
                     FFTConstants.sampleRate, AudioFormat.CHANNEL_OUT_MONO,
                     AudioFormat.ENCODING_PCM_16BIT, FFTConstants.fftSampleRate,
                     AudioTrack.MODE_STATIC);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(Constants.LOG, "Error while initializing audio playback", e);
         }
     }
 
@@ -60,10 +63,17 @@ class SenderAndroid implements Runnable {
 
     @Override
     public void run() {
-        while (true) {
+        Log.d(Constants.LOG, "Starting sender thread");
+
+        while (!stopFlag) {
             sendSyncData();
             sendData();
         }
+    }
+
+    public void stop() {
+        Log.d(Constants.LOG, "Destroying sender thread");
+        stopFlag = true;
     }
 
     private void sendSyncData() {
@@ -112,11 +122,11 @@ class SenderAndroid implements Runnable {
         for (int i = 3; i < 16; i++) {
             if ((i & (i - 1)) != 0) {
                 List<short[]> toAdd = new ArrayList<short[]>();
-                System.out.print("\n" + i + ": ");
+                Log.v(Constants.LOG, "\n" + i + ": ");
                 for (int j = 0; j < 4; j++) {
                     if ((i & (1 << j)) != 0) {
                         toAdd.add(samples.get((1 << j)));
-                        System.out.print((1 << j) + " ");
+                        Log.v(Constants.LOG, (1 << j) + " ");
                     }
                 }
                 samples.put(i, sum(toAdd));

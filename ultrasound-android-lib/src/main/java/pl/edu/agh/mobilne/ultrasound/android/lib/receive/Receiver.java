@@ -42,6 +42,8 @@ class Receiver implements Runnable {
 
     @Override
     public void run() {
+        Log.d(Constants.LOG, "Starting receiver thread");
+
         audioRecord.startRecording();
 
         int syncFoundPosition = syncAndReturnBufferPosition();

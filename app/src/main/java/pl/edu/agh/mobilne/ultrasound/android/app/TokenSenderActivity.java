@@ -1,10 +1,15 @@
 package pl.edu.agh.mobilne.ultrasound.android.app;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
+
+import pl.edu.agh.mobilne.ultrasound.android.lib.send.SenderService;
+import pl.edu.agh.mobilne.ultrasound.core.TokenGenerator;
 
 
 public class TokenSenderActivity extends ActionBarActivity {
@@ -14,6 +19,7 @@ public class TokenSenderActivity extends ActionBarActivity {
     private Button startSendingButton;
     private Button stopSendingButton;
     private Button generateTokenButton;
+    private TextView tokenEditText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +29,7 @@ public class TokenSenderActivity extends ActionBarActivity {
         startSendingButton = (Button) findViewById(R.id.startSendButton);
         stopSendingButton = (Button) findViewById(R.id.stopSendButton);
         generateTokenButton = (Button) findViewById(R.id.generateTokenButton);
+        tokenEditText = (TextView) findViewById(R.id.tokenEditText);
 
         updateButtons();
     }
@@ -46,15 +53,33 @@ public class TokenSenderActivity extends ActionBarActivity {
         isStarted = true;
 
         updateButtons();
+        startSenderService(tokenEditText.getText().toString());
     }
 
     public void stopSendingToken(View view) {
         isStarted = false;
 
         updateButtons();
+        stopSenderService();
     }
 
     public void generateToken(View view) {
+        String generatedToken = TokenGenerator.getStringToken();
+
+        tokenEditText.setText(generatedToken);
+    }
+
+    private void startSenderService(String tokenString) {
+        byte[] tokenData = TokenGenerator.convertFromString(tokenString);
+
+        Intent intent = new Intent(this, SenderService.class);
+        intent.putExtra(SenderService.BYTE_BUFFER_KEY, tokenData);
+        startService(intent);
+    }
+
+    private void stopSenderService() {
+        Intent intent = new Intent(this, SenderService.class);
+        stopService(intent);
     }
 
     private void updateButtons() {
