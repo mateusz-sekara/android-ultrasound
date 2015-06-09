@@ -40,6 +40,7 @@ public abstract class AbstractSender implements Runnable {
     @Override
     public void run() {
         System.out.println("Starting sender thread");
+        beforeStart();
 
         while (!stopFlag) {
             sendSyncData();
@@ -47,39 +48,29 @@ public abstract class AbstractSender implements Runnable {
         }
     }
 
+    protected abstract void beforeStart();
+
     public void stop() {
         System.out.println("Destroying sender thread");
         stopFlag = true;
     }
 
     private void sendSyncData() {
-        for (int i = 0; i < 5; i++) {
-            send4Bits(FFTConstants.SILENCE);
-        }
-        for (int i = 0; i < 5; i++) {
-            send4Bits(0);
-        }
-        for (int i = 0; i < 5; i++) {
-            send4Bits(FFTConstants.SILENCE);
-        }
+        send4Bits(FFTConstants.SILENCE);
+        send4Bits(0);
+        send4Bits(FFTConstants.SILENCE);
     }
 
     private synchronized void sendData() {
         for (byte singleByte : data) {
             // send low order bytes
-            for (int i = 0; i < 5; i++) {
-                send4Bits(((singleByte >> 4) & 0x0F));
-            }
+            send4Bits(((singleByte >> 4) & 0x0F));
             // send high order bytes
-            for (int i = 0; i < 5; i++) {
-                send4Bits((singleByte & 0x0F));
-            }
+            send4Bits((singleByte & 0x0F));
         }
         // send last 2 bytes of crc from highest to lowest
-        for (int j = 4; j > 0; j--) {
-            for (int i = 0; i < 5; i++) {
-                send4Bits((int) ((crc32 >> (4 * j)) & 0x0F));
-            }
+        for (int j = 3; j >= 0; j--) {
+            send4Bits((int) ((crc32 >> (4 * j)) & 0x0F));
         }
         sent = true;
     }

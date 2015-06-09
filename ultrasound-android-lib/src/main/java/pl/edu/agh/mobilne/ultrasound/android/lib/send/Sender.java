@@ -28,10 +28,17 @@ class Sender extends AbstractSender {
 
     @Override
     protected void send4Bits(int data) {
-        audioTrack.write(samples.get(data), 0, FFTConstants.fftSampleRate);
-        audioTrack.play();
+        for (int i = 0; i < 5; i++) {
+            audioTrack.write(samples.get(data), 0, FFTConstants.fftSampleRate);
+            audioTrack.play();
+        }
     }
 
+    @Override
+    protected void beforeStart() {
+    }
+
+    @Override
     protected void prepare() {
         samples = new HashMap<Integer, short[]>();
         try {
@@ -44,6 +51,7 @@ class Sender extends AbstractSender {
         }
     }
 
+    @Override
     protected void prepareTones() {
         samples.put(0, genTone(computeFrequency(FFTConstants.frequencyOn)));
         samples.put(FFTConstants.SILENCE, new short[FFTConstants.fftSampleRate]);

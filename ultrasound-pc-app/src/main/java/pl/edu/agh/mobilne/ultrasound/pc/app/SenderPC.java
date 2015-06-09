@@ -27,9 +27,17 @@ public class SenderPC extends AbstractSender {
 
     @Override
     protected void send4Bits(int data) {
-        line.write(samples.get(data), 0, FFTConstants.fftSampleRate);
+        for (int i = 0; i < 5; i++) {
+            line.write(samples.get(data), 0, FFTConstants.fftSampleRate);
+        }
     }
 
+    @Override
+    protected void beforeStart() {
+        line.start();
+    }
+
+    @Override
     protected void prepare() {
         try {
             samples = new HashMap<Integer, byte[]>();
@@ -42,6 +50,7 @@ public class SenderPC extends AbstractSender {
         }
     }
 
+    @Override
     protected void prepareTones() {
         samples.put(0, genTone(computeFrequency(FFTConstants.frequencyOn)));
         samples.put(FFTConstants.SILENCE, new byte[FFTConstants.fftSampleRate]);
