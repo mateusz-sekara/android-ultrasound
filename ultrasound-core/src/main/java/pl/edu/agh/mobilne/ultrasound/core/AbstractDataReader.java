@@ -49,9 +49,9 @@ public abstract class AbstractDataReader implements Runnable {
         stopFlag = true;
     }
 
-    protected abstract void onSuccess(byte[] outputWithCrc);
+    protected abstract void onSuccess(byte[] output);
 
-    protected abstract void onFailure(byte[] outputWithCrc);
+    protected abstract void onFailure(byte[] output, byte[] outputWithCrc);
 
     private void checkCrc(byte[] outputWithCrc) {
         //fixme logger
@@ -66,9 +66,9 @@ public abstract class AbstractDataReader implements Runnable {
 
         if (highCrc16Byte == outputWithCrc[outputWithCrc.length - 2] &&
                 lowCrc16Byte == outputWithCrc[outputWithCrc.length - 1]) {
-            onSuccess(outputWithCrc);
+            onSuccess(output);
         } else {
-            onFailure(outputWithCrc);
+            onFailure(output, outputWithCrc);
         }
     }
 }

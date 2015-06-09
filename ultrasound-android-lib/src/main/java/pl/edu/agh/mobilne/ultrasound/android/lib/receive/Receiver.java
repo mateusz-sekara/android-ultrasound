@@ -43,23 +43,27 @@ class Receiver implements Runnable {
     @Override
     public void run() {
         Log.d(Constants.LOG, "Starting receiver thread");
+        try {
+            audioRecord.startRecording();
 
-        audioRecord.startRecording();
-
-        int syncFoundPosition = syncAndReturnBufferPosition();
-        if (syncFoundPosition < 0) {
-            return;
-        }
-
-        int count = readFirstLineAfterSync(syncFoundPosition);
-        while (!stopFlag) {
-            if (count == bufferSize) {
-                processData();
-            } else {
-                Log.e(Constants.LOG, "Wrong buffer size");
+            int syncFoundPosition = syncAndReturnBufferPosition();
+            if (syncFoundPosition < 0) {
                 return;
             }
-            count = audioRecord.read(mainBuffer, 0, bufferSize);
+
+            int count = readFirstLineAfterSync(syncFoundPosition);
+            while (!stopFlag) {
+                if (count == bufferSize) {
+                    processData();
+                } else {
+                    Log.e(Constants.LOG, "Wrong buffer size");
+                    return;
+                }
+                count = audioRecord.read(mainBuffer, 0, bufferSize);
+            }
+        } finally {
+            //cleanup
+            audioRecord.release();
         }
     }
 

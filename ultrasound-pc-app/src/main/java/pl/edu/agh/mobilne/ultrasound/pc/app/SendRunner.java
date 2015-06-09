@@ -23,11 +23,11 @@ public class SendRunner {
 
         Thread.sleep(500);
         senderPC.setData(createToken());
-        Thread.sleep(5000);
+        Thread.sleep(10000);
         senderPC.setData(createToken());
-        Thread.sleep(5000);
+        Thread.sleep(10000);
         senderPC.setData(createToken());
-        Thread.sleep(5000);
+        Thread.sleep(10000);
         senderPC.setData(createToken());
     }
 }

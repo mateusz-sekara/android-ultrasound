@@ -75,12 +75,12 @@ public class ReceiverService extends Service {
         }
 
         @Override
-        protected void onSuccess(byte[] outputWithCrc) {
-            publishResult(outputWithCrc);
+        protected void onSuccess(byte[] output) {
+            publishResult(output);
         }
 
         @Override
-        protected void onFailure(byte[] outputWithCrc) {
+        protected void onFailure(byte[] output, byte[] outputWithCrc) {
 
         }
     }

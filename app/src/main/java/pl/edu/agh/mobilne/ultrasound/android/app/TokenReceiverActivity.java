@@ -96,7 +96,7 @@ public class TokenReceiverActivity extends ActionBarActivity {
 
     private void updateToken(byte[] receivedToken) {
         if (token == null || !Arrays.equals(token, receivedToken)) {
-            tokenValueTextView.setText(TokenGenerator.convertFromByteArray(token));
+            tokenValueTextView.setText(TokenGenerator.convertFromByteArray(receivedToken));
             token = receivedToken;
         }
     }
