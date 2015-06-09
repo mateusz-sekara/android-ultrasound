@@ -11,14 +11,16 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import pl.edu.agh.mobilne.ultrasound.android.app.model.Token;
+import java.util.Arrays;
+
 import pl.edu.agh.mobilne.ultrasound.android.lib.receive.ReceiverService;
+import pl.edu.agh.mobilne.ultrasound.core.TokenGenerator;
 
 
 public class TokenReceiverActivity extends ActionBarActivity {
 
     private boolean isStarted = false;
-    private Token token;
+    private byte[] token;
 
     private Button startReceivingButton;
     private Button stopReceivingButton;
@@ -92,10 +94,10 @@ public class TokenReceiverActivity extends ActionBarActivity {
         stopService(intent);
     }
 
-    private void updateToken(Token receiveToken) {
-        if (token == null || !receiveToken.equals(token)) {
-            tokenValueTextView.setText(receiveToken.toString());
-            token = receiveToken;
+    private void updateToken(byte[] receivedToken) {
+        if (token == null || !Arrays.equals(token, receivedToken)) {
+            tokenValueTextView.setText(TokenGenerator.convertFromByteArray(token));
+            token = receivedToken;
         }
     }
 
@@ -105,8 +107,7 @@ public class TokenReceiverActivity extends ActionBarActivity {
             Bundle bundle = intent.getExtras();
             if (bundle != null) {
                 byte[] tokenByteArray = bundle.getByteArray(ReceiverService.BYTE_BUFFER_KEY);
-                Token receivedToken = new Token(tokenByteArray);
-                updateToken(receivedToken);
+                updateToken(tokenByteArray);
             }
         }
     };
