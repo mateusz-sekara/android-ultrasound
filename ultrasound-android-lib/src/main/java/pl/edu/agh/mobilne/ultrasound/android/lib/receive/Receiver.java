@@ -1,41 +1,42 @@
-package pl.edu.agh.mobilne.ultrasound.android.lib;
+package pl.edu.agh.mobilne.ultrasound.android.lib.receive;
 
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.util.Log;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
+import pl.edu.agh.mobilne.ultrasound.android.lib.Constants;
 import pl.edu.agh.mobilne.ultrasound.android.lib.fft.FFT;
 import pl.edu.agh.mobilne.ultrasound.core.FFTConstants;
 
 import static pl.edu.agh.mobilne.ultrasound.core.Utils.computeFrequency;
 
 
-public class ReceiverAndroid implements Runnable {
+class Receiver implements Runnable {
 
     private static final int bufferSize = FFTConstants.recordSampleRate;
     private static final short mainBuffer[] = new short[bufferSize];
     private static final short syncBuffer[] = new short[bufferSize];
 
-    private OutputStream os;
+    private volatile boolean stopFlag = false;
 
-    AudioRecord audioRecord;
-
+    private OutputStream outputStream;
+    private AudioRecord audioRecord;
     private FFT mainFFT;
-
     private FFT syncFFT;
 
-    public ReceiverAndroid(OutputStream os) {
-        this.os = os;
+    Receiver(OutputStream outputStream) {
+        this.outputStream = outputStream;
         try {
             mainFFT = new FFT(FFTConstants.fftSampleRate, FFTConstants.sampleRate);
             syncFFT = new FFT(FFTConstants.smallFftSampleRate, FFTConstants.sampleRate);
             audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, FFTConstants.sampleRate,
                     AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, FFTConstants.recordSampleRate * 2);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(Constants.LOG, "Error while initializing audio recorder", e);
         }
     }
 
@@ -49,15 +50,20 @@ public class ReceiverAndroid implements Runnable {
         }
 
         int count = readFirstLineAfterSync(syncFoundPosition);
-        while (true) {
+        while (!stopFlag) {
             if (count == bufferSize) {
                 processData();
             } else {
-                System.err.println("Wrong buffer size");
+                Log.e(Constants.LOG, "Wrong buffer size");
                 return;
             }
             count = audioRecord.read(mainBuffer, 0, bufferSize);
         }
+    }
+
+    public void stop() {
+        Log.d(Constants.LOG, "Destroying receiver thread");
+        stopFlag = false;
     }
 
     private int syncAndReturnBufferPosition() {
@@ -71,12 +77,12 @@ public class ReceiverAndroid implements Runnable {
                     final boolean has19k = syncFFT.hasFrequency(Math.round(FFTConstants.frequencyOn / FFTConstants.smallFftFreqIndexRange) * FFTConstants.smallFftFreqIndexRange);
                     if (has19k) {
                         found = FFTConstants.smallFftSampleRate * k;
-                        System.out.println("Found on position: " + found);
+                        Log.d(Constants.LOG, "Found on position - " + found);
                         break outer;
                     }
                 }
             } else {
-                System.err.println("Wrong buffer size");
+                Log.e(Constants.LOG, "Wrong buffer size");
                 return -1;
             }
         }
@@ -87,7 +93,7 @@ public class ReceiverAndroid implements Runnable {
         try {
             System.arraycopy(syncBuffer, syncFoundPosition, mainBuffer, 0, bufferSize - syncFoundPosition);
         } catch (ArrayIndexOutOfBoundsException e) {
-            System.err.println("found: " + syncFoundPosition);
+            Log.e(Constants.LOG, "Found - " + syncFoundPosition);
             return -1;
         }
         if (syncFoundPosition > 0) {
@@ -113,7 +119,7 @@ public class ReceiverAndroid implements Runnable {
                 }
             }
             try {
-                os.write(output);
+                outputStream.write(output);
             } catch (IOException e) {
                 //do nothing
             }

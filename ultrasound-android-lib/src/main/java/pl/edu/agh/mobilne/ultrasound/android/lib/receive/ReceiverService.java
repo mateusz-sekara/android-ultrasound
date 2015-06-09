@@ -1,0 +1,95 @@
+package pl.edu.agh.mobilne.ultrasound.android.lib.receive;
+
+import android.app.Service;
+import android.content.Intent;
+import android.os.IBinder;
+import android.util.Log;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+
+import pl.edu.agh.mobilne.ultrasound.android.lib.Constants;
+import pl.edu.agh.mobilne.ultrasound.core.AbstractDataReader;
+
+public class ReceiverService extends Service {
+
+    public static final String NOTIFICATION_ID
+            = "pl.edu.agh.mobilne.ultrasound.android.lib.receive.ReceiverService";
+
+    public static final String BYTE_BUFFER_KEY = "bytebuffer";
+    public static final String STATUS_KEY = "status";
+
+    private AndroidDataReader dataReader;
+    private Receiver receiver;
+
+    private PipedOutputStream outputStream;
+    private PipedInputStream inputStream;
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(Constants.LOG, "Starting ReceiverService");
+        try {
+            outputStream = new PipedOutputStream();
+            inputStream = new PipedInputStream(outputStream);
+            receiver = new Receiver(outputStream);
+            new Thread(receiver).start();
+
+            dataReader = new AndroidDataReader(inputStream);
+            new Thread(dataReader).start();
+        } catch (IOException e) {
+            Log.e(Constants.LOG, "Error while initializing buffers", e);
+        }
+
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.d(Constants.LOG, "Destroying ReceiverService");
+        dataReader.stop();
+        receiver.stop();
+
+        closeQuietly(outputStream);
+        closeQuietly(inputStream);
+    }
+
+    private void closeQuietly(Closeable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (IOException e) {
+            }
+        }
+    }
+
+    private void publishResult(byte[] byteBuffer) {
+        Intent intent = new Intent(NOTIFICATION_ID);
+        intent.putExtra(BYTE_BUFFER_KEY, byteBuffer);
+        intent.putExtra(STATUS_KEY, 0 /*fixme*/);
+        sendBroadcast(intent);
+    }
+
+    private class AndroidDataReader extends AbstractDataReader {
+
+        protected AndroidDataReader(PipedInputStream inputStream) {
+            super(inputStream);
+        }
+
+        @Override
+        protected void onSuccess(byte[] outputWithCrc) {
+            publishResult(outputWithCrc);
+        }
+
+        @Override
+        protected void onFailure(byte[] outputWithCrc) {
+
+        }
+    }
+}

@@ -1,4 +1,4 @@
-package pl.edu.agh.mobilne.ultrasound.android.lib;
+package pl.edu.agh.mobilne.ultrasound.android.lib.send;
 
 import android.media.AudioFormat;
 import android.media.AudioManager;
@@ -15,7 +15,7 @@ import pl.edu.agh.mobilne.ultrasound.core.FFTConstants;
 
 import static pl.edu.agh.mobilne.ultrasound.core.Utils.computeFrequency;
 
-public class SenderAndroid implements Runnable {
+class SenderAndroid implements Runnable {
 
     private AudioTrack audioTrack;
 
@@ -28,7 +28,7 @@ public class SenderAndroid implements Runnable {
     private Map<Integer, short[]> samples = new HashMap<Integer, short[]>();
     private short silence[];
 
-    public SenderAndroid(byte[] initData) {
+    SenderAndroid(byte[] initData) {
         prepare();
         prepareTones();
         setData(initData);
