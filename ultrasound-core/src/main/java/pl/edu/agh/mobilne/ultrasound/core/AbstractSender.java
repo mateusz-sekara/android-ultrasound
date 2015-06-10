@@ -46,9 +46,17 @@ public abstract class AbstractSender implements Runnable {
             sendSyncData();
             sendData();
         }
+
+        doCleanup();
     }
 
-    protected abstract void beforeStart();
+    protected void doCleanup() {
+
+    }
+
+    protected void beforeStart() {
+
+    }
 
     public void stop() {
         System.out.println("Destroying sender thread");

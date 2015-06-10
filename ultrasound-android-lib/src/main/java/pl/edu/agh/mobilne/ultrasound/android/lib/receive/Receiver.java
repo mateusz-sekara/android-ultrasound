@@ -12,6 +12,7 @@ import pl.edu.agh.mobilne.ultrasound.android.lib.Constants;
 import pl.edu.agh.mobilne.ultrasound.core.FFTConstants;
 import pl.edu.agh.mobilne.ultrasound.core.fft.FFT;
 
+import static pl.edu.agh.mobilne.ultrasound.core.Utils.closeQuietly;
 import static pl.edu.agh.mobilne.ultrasound.core.Utils.computeFrequency;
 
 
@@ -62,7 +63,7 @@ class Receiver implements Runnable {
                 count = audioRecord.read(mainBuffer, 0, bufferSize);
             }
         } finally {
-            //cleanup
+            closeQuietly(outputStream);
             audioRecord.release();
         }
     }

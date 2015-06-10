@@ -34,10 +34,6 @@ class Sender extends AbstractSender {
     }
 
     @Override
-    protected void beforeStart() {
-    }
-
-    @Override
     protected void prepare() {
         samples = new HashMap<Integer, short[]>();
         try {
@@ -49,6 +45,11 @@ class Sender extends AbstractSender {
         } catch (Exception e) {
             Log.e(Constants.LOG, "Error while initializing audio playback", e);
         }
+    }
+
+    @Override
+    protected void doCleanup() {
+        audioTrack.release();
     }
 
     @Override
