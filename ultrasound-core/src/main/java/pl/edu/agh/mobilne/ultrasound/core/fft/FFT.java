@@ -1,10 +1,13 @@
 package pl.edu.agh.mobilne.ultrasound.core.fft;
 
-
-//TODO create common version and move to core module
 public class FFT extends FourierTransform {
-    public FFT(int timeSize, float sampleRate) {
+
+    private final double spectrumMultiplier;
+
+    public FFT(int timeSize, float sampleRate, double spectrumMultiplier) {
         super(timeSize, sampleRate);
+        this.spectrumMultiplier = spectrumMultiplier;
+
         if ((timeSize & (timeSize - 1)) != 0)
             throw new IllegalArgumentException(
                     "FFT: timeSize must be a power of two.");
@@ -140,6 +143,6 @@ public class FFT extends FourierTransform {
         }
         avg /= indexMax - indexMin - (indexFreqMax - indexFreqMin);
 
-        return spectrum[index] > avg * 3.5;
+        return spectrum[index] > avg * spectrumMultiplier;
     }
 }

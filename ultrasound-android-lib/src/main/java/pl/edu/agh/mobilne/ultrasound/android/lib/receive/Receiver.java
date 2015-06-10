@@ -31,8 +31,8 @@ class Receiver implements Runnable {
     Receiver(OutputStream outputStream) {
         this.outputStream = outputStream;
         try {
-            mainFFT = new FFT(FFTConstants.fftSampleRate, FFTConstants.sampleRate);
-            syncFFT = new FFT(FFTConstants.smallFftSampleRate, FFTConstants.sampleRate);
+            mainFFT = new FFT(FFTConstants.fftSampleRate, FFTConstants.sampleRate, 3.5);
+            syncFFT = new FFT(FFTConstants.smallFftSampleRate, FFTConstants.sampleRate, 3.5);
             audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, FFTConstants.sampleRate,
                     AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, FFTConstants.recordSampleRate * 2);
         } catch (Exception e) {

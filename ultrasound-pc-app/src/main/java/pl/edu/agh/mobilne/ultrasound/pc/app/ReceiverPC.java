@@ -1,6 +1,7 @@
 package pl.edu.agh.mobilne.ultrasound.pc.app;
 
-import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
@@ -18,7 +19,7 @@ public class ReceiverPC implements Runnable {
     private static final byte mainBuffer[] = new byte[bufferSize];
     private static final byte syncBuffer[] = new byte[bufferSize];
 
-    private ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    private OutputStream baos;
 
     private TargetDataLine line;
 
@@ -26,10 +27,11 @@ public class ReceiverPC implements Runnable {
 
     private FFT syncFFT;
 
-    public ReceiverPC() {
+    public ReceiverPC(OutputStream outputStream) {
         try {
-            mainFFT = new FFT(FFTConstants.fftSampleRate, FFTConstants.sampleRate);
-            syncFFT = new FFT(FFTConstants.smallFftSampleRate, FFTConstants.sampleRate);
+            baos = outputStream;
+            mainFFT = new FFT(FFTConstants.fftSampleRate, FFTConstants.sampleRate, 4.5);
+            syncFFT = new FFT(FFTConstants.smallFftSampleRate, FFTConstants.sampleRate, 4.5);
             final AudioFormat format = new AudioFormat(FFTConstants.sampleRate, 8/*samplesize*/, 1, true,
                     true);
             DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
@@ -113,7 +115,11 @@ public class ReceiverPC implements Runnable {
                     output = -1; // silence
                 }
             }
-            baos.write(output);
+            try {
+                baos.write(output);
+            } catch (IOException e) {
+                //do nothing
+            }
         }
     }
 }

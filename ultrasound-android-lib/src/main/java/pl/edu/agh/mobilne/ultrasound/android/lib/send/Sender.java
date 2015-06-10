@@ -30,7 +30,6 @@ class Sender extends AbstractSender {
     protected void send4Bits(int data) {
         for (int i = 0; i < 5; i++) {
             audioTrack.write(samples.get(data), 0, FFTConstants.fftSampleRate);
-            audioTrack.play();
         }
     }
 
@@ -45,7 +44,8 @@ class Sender extends AbstractSender {
             audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,
                     FFTConstants.sampleRate, AudioFormat.CHANNEL_OUT_MONO,
                     AudioFormat.ENCODING_PCM_16BIT, FFTConstants.fftSampleRate,
-                    AudioTrack.MODE_STATIC);
+                    AudioTrack.MODE_STREAM);
+            audioTrack.play();
         } catch (Exception e) {
             Log.e(Constants.LOG, "Error while initializing audio playback", e);
         }
