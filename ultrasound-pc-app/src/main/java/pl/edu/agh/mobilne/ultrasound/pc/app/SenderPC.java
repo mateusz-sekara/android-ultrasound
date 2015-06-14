@@ -28,7 +28,7 @@ public class SenderPC extends AbstractSender {
     @Override
     protected void send4Bits(int data) {
         for (int i = 0; i < 5; i++) {
-            line.write(samples.get(data), 0, FFTConstants.fftSampleRate);
+            line.write(samples.get(data), 0, FFTConstants.fftVectorLength);
         }
     }
 
@@ -52,8 +52,8 @@ public class SenderPC extends AbstractSender {
 
     @Override
     protected void prepareTones() {
-        samples.put(0, genTone(computeFrequency(FFTConstants.frequencyOn)));
-        samples.put(FFTConstants.SILENCE, new byte[FFTConstants.fftSampleRate]);
+        samples.put(0, genTone(computeFrequency(FFTConstants.frequency0)));
+        samples.put(FFTConstants.SILENCE, new byte[FFTConstants.fftVectorLength]);
         for (int i = 0; i < 4; i++) {
             samples.put((1 << i), genTone(computeFrequency(FFTConstants.baseFrequency + FFTConstants.stepFrequency * i)));
         }
@@ -71,8 +71,8 @@ public class SenderPC extends AbstractSender {
     }
 
     private byte[] sum(List<byte[]> samples) {
-        byte[] result = new byte[FFTConstants.fftSampleRate];
-        for (int i = 0; i < FFTConstants.fftSampleRate; i++) {
+        byte[] result = new byte[FFTConstants.fftVectorLength];
+        for (int i = 0; i < FFTConstants.fftVectorLength; i++) {
             for (byte[] sample : samples) {
                 result[i] += sample[i] / samples.size();
             }
@@ -81,9 +81,9 @@ public class SenderPC extends AbstractSender {
     }
 
     private byte[] genTone(double freq) {
-        byte[] sample = new byte[FFTConstants.fftSampleRate];
+        byte[] sample = new byte[FFTConstants.fftVectorLength];
         // fill out the array
-        for (int i = 0; i < FFTConstants.fftSampleRate; ++i) {
+        for (int i = 0; i < FFTConstants.fftVectorLength; ++i) {
             sample[i] = (byte) (Math.sin(2 * Math.PI * i / (FFTConstants.sampleRate / freq)) * 127);
         }
         return sample;

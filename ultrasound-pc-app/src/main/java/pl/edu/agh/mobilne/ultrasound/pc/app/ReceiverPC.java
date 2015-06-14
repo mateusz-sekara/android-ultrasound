@@ -30,8 +30,8 @@ public class ReceiverPC implements Runnable {
     public ReceiverPC(OutputStream outputStream) {
         try {
             baos = outputStream;
-            mainFFT = new FFT(FFTConstants.fftSampleRate, FFTConstants.sampleRate, 4.5);
-            syncFFT = new FFT(FFTConstants.smallFftSampleRate, FFTConstants.sampleRate, 4.5);
+            mainFFT = new FFT(FFTConstants.fftVectorLength, FFTConstants.sampleRate, 4.5);
+            syncFFT = new FFT(FFTConstants.syncFftVectorLength, FFTConstants.sampleRate, 4.5);
             final AudioFormat format = new AudioFormat(FFTConstants.sampleRate, 8/*samplesize*/, 1, true,
                     true);
             DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
@@ -69,11 +69,11 @@ public class ReceiverPC implements Runnable {
         while (true) {
             int count = line.read(syncBuffer, 0, bufferSize);
             if (count == bufferSize) {
-                for (int k = 0; k < FFTConstants.smallFftToRecordMultiplier; k++) {
-                    syncFFT.forward(syncBuffer, FFTConstants.smallFftSampleRate * k, FFTConstants.smallFftSampleRate);
-                    final boolean has19k = syncFFT.hasFrequency(Math.round(FFTConstants.frequencyOn / FFTConstants.smallFftFreqIndexRange) * FFTConstants.smallFftFreqIndexRange);
+                for (int k = 0; k < FFTConstants.syncFftToRecordMultiplier; k++) {
+                    syncFFT.forward(syncBuffer, FFTConstants.syncFftVectorLength * k, FFTConstants.syncFftVectorLength);
+                    final boolean has19k = syncFFT.hasFrequency(Math.round(FFTConstants.frequency0 / FFTConstants.syncFftFreqIndexRange) * FFTConstants.syncFftFreqIndexRange);
                     if (has19k) {
-                        found = FFTConstants.smallFftSampleRate * k;
+                        found = FFTConstants.syncFftVectorLength * k;
                         System.out.println("Found on position: " + found);
                         break outer;
                     }
@@ -102,9 +102,9 @@ public class ReceiverPC implements Runnable {
 
     private void processData() {
         for (int k = 0; k < FFTConstants.fftToRecordMultiplier; k++) {
-            mainFFT.forward(mainBuffer, FFTConstants.fftSampleRate * k, FFTConstants.fftSampleRate);
+            mainFFT.forward(mainBuffer, FFTConstants.fftVectorLength * k, FFTConstants.fftVectorLength);
             int output = 0;
-            if (!mainFFT.hasFrequency(computeFrequency(FFTConstants.frequencyOn))) { // is not 0
+            if (!mainFFT.hasFrequency(computeFrequency(FFTConstants.frequency0))) { // is not 0
                 for (int i = 3; i >= 0; i--) {
                     output = output << 1;
                     if (mainFFT.hasFrequency(computeFrequency(FFTConstants.baseFrequency + FFTConstants.stepFrequency * i))) {
